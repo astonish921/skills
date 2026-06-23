@@ -1,0 +1,6 @@
+docs/
+tests/
+skills/image-gen-use-api/.env
+project/
+skills/image-gen-use-api/__pycache__/
+skills/image-gen-use-api/providers/__pycache__/
