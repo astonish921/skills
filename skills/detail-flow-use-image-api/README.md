@@ -1,26 +1,30 @@
 # detail-flow-use-image-api
 
-`detail-flow-use-image-api` is a standalone fork of `detail-flow` that keeps the blueprint-first, audit-heavy ecommerce page workflow but uses explicit local image API execution for masters and slice batches.
+`detail-flow-use-image-api` 是 `detail-flow` 的独立分支，保留了以蓝图为核心、强审计的电商详情页工作流，但改用显式的本地图像 API 来执行主图和切片批次生成。
 
-## Core behavior
+## 核心行为
 
-- Keep the two user approval gates from `detail-flow`
-- Preserve the `1:3` master plus `9:21` slice workflow
-- Use `IMAGE_BACKEND` plus provider-specific credentials
-- Run single-image generation through `detail_flow_use_image_api.py`
-- Run slice batches through `detail_flow_use_image_api.py --manifest`
+- 保留 `detail-flow` 中的两道用户审批关卡
+- 沿用 `1:3` 主图加 `9:21` 切片的工作流程
+- 使用 `IMAGE_BACKEND` 及各服务商对应的凭证
+- 单图生成通过 `detail_flow_use_image_api.py` 执行
+- 批量切片通过 `detail_flow_use_image_api.py --manifest` 执行
 
-## Configuration
+## 配置
 
-Set `IMAGE_BACKEND` and provider-specific credentials in the current environment or `.env`. See `.env.example` for the full backend matrix.
+在当前环境或 `.env` 文件中设置 `IMAGE_BACKEND` 及各服务商对应的凭证。完整后端列表参见 `.env.example`。
 
-## Examples
+## 示例
 
 ```bash
-python skills/detail-flow-use-image-api/detail_flow_use_image_api.py "A polished 1:3 product continuity master" --aspect-ratio "1:3" --filename "product_master_1x3.png" --topic-hint "smart fan"
+python skills/detail-flow-use-image-api/detail_flow_use_image_api.py "一张精致的 1:3 产品连续主图" --aspect-ratio "1:3" --filename "product_master_1x3.png" --topic-hint "智能风扇"
 python skills/detail-flow-use-image-api/detail_flow_use_image_api.py --manifest "project/smart-fan/images/image_prompts.json"
 ```
 
-## Source workflow
+## 来源工作流
 
-This skill is based on `detail-flow`, but it is independently runnable and does not import `image-gen-use-api` at runtime.
+本技能基于 `detail-flow`，但可独立运行，运行时不依赖 `image-gen-use-api`。
+
+
+## 使用提示词
+读取产品图并理解：D:\04git\test_gemini_image\source1\耳机.png;读取参考效果图并理解：D:\04git\test_gemini_image\source1\狮子带耳机.png,请为这个产品生成一套8屏电商详情页。我想的是用参考图的狮子作为主角，拟人化的手法进行表现，但是不出现人的特征，用动物的动静结合来体验出耳机优秀的音质和降噪能力。详情页整体是比较有趣诙谐好玩的。故事性更像狩猎前夜。

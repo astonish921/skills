@@ -4,3 +4,6 @@ skills/image-gen-use-api/.env
 project/
 skills/image-gen-use-api/__pycache__/
 skills/image-gen-use-api/providers/__pycache__/
+
+skills/detail-flow-use-image-api/__pycache__/
+skills/detail-flow-use-image-api/providers/__pycache__/
