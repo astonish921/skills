@@ -1,0 +1,4 @@
+interface:
+  display_name: "DetailFlow Use Image API"
+  short_description: "Plan, generate, audit, and deliver ecommerce detail pages with explicit image API execution."
+  default_prompt: "Use $detail-flow-use-image-api to create an 8-screen ecommerce detail page from my product image and style reference using explicit IMAGE_BACKEND-driven image generation."
