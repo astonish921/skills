@@ -16,12 +16,14 @@ class DocsSmokeTests(unittest.TestCase):
         self.assertIn("IMAGE_BACKEND", text)
         self.assertIn("project/<topic-slug>/images/", text)
         self.assertIn("two normal user approval gates", text)
+        self.assertIn("--reference-image", text)
 
     def test_readme_mentions_new_skill_name_and_entrypoint(self) -> None:
         text = (SKILL_DIR / "README.md").read_text(encoding="utf-8")
         self.assertIn("detail-flow-use-image-api", text)
         self.assertIn("python skills/detail-flow-use-image-api/detail_flow_use_image_api.py", text)
         self.assertIn("IMAGE_BACKEND", text)
+        self.assertIn("--reference-image", text)
 
     def test_reference_doc_mentions_script_backed_generation(self) -> None:
         text = (SKILL_DIR / "references" / "detail-page-patterns.md").read_text(encoding="utf-8")

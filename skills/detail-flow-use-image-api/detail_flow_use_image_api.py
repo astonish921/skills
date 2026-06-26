@@ -54,6 +54,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--filename", default="image.png")
     parser.add_argument("--output-dir", default="")
     parser.add_argument("--model", default="")
+    parser.add_argument(
+        "--reference-image",
+        default="",
+        help="Local product reference image path. Currently consumed by the Gemini backend.",
+    )
     return parser
 
 
@@ -93,7 +98,27 @@ def _prepare_single_output(args: argparse.Namespace):
     return paths.images_dir, paths.manifest_path, paths.project_slug
 
 
-def _run_manifest_items(manifest: dict, manifest_path: Path, backend, output_dir: Path) -> dict:
+def _build_generate_kwargs(backend_name: str, item: dict, output_dir: Path) -> dict:
+    kwargs = {
+        "prompt": item["prompt"],
+        "aspect_ratio": item["aspect_ratio"],
+        "image_size": item.get("image_size", "1K"),
+        "output_dir": str(output_dir),
+        "filename": item["filename"],
+        "model": item.get("model"),
+    }
+    if backend_name == "gemini" and item.get("reference_image"):
+        kwargs["reference_image"] = item["reference_image"]
+    return kwargs
+
+
+def _run_manifest_items(
+    manifest: dict,
+    manifest_path: Path,
+    backend_name: str,
+    backend,
+    output_dir: Path,
+) -> dict:
     items = manifest["items"]
     queue = [index for index, item in enumerate(items) if item["status"] in RETRYABLE_STATUSES]
     skipped = len(items) - len(queue)
@@ -106,12 +131,7 @@ def _run_manifest_items(manifest: dict, manifest_path: Path, backend, output_dir
         item = items[index]
         try:
             saved_path = backend.generate(
-                prompt=item["prompt"],
-                aspect_ratio=item["aspect_ratio"],
-                image_size=item.get("image_size", "1K"),
-                output_dir=str(output_dir),
-                filename=item["filename"],
-                model=item.get("model"),
+                **_build_generate_kwargs(backend_name, item, output_dir)
             )
             return index, saved_path, None
         except Exception as exc:  # noqa: BLE001
@@ -172,17 +192,12 @@ def run_single(args: argparse.Namespace) -> dict:
     )
     if args.model:
         manifest["items"][0]["model"] = args.model
+    if args.reference_image:
+        manifest["items"][0]["reference_image"] = args.reference_image
     save_manifest(manifest_path, manifest)
 
     item = manifest["items"][0]
-    saved_path = backend.generate(
-        prompt=item["prompt"],
-        aspect_ratio=item["aspect_ratio"],
-        image_size=item.get("image_size", "1K"),
-        output_dir=str(images_dir),
-        filename=item["filename"],
-        model=item.get("model"),
-    )
+    saved_path = backend.generate(**_build_generate_kwargs(backend_name, item, images_dir))
 
     item["status"] = "Generated"
     item["output_path"] = saved_path
@@ -205,7 +220,13 @@ def run_batch(args: argparse.Namespace) -> dict:
 
     manifest_path = Path(args.manifest).resolve()
     manifest = load_manifest(manifest_path)
-    summary = _run_manifest_items(manifest, manifest_path, backend, manifest_path.parent)
+    summary = _run_manifest_items(
+        manifest,
+        manifest_path,
+        backend_name,
+        backend,
+        manifest_path.parent,
+    )
     return {
         "mode": "batch",
         "backend": backend_name,

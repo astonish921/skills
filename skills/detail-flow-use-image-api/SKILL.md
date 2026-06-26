@@ -16,6 +16,7 @@ This variant keeps the blueprint-first, audit-heavy ecommerce page workflow and 
 - use `python skills/detail-flow-use-image-api/detail_flow_use_image_api.py --manifest <path>` for multi-slice batches
 - write outputs and manifests under `project/<topic-slug>/images/` unless the workflow intentionally supplies `--output-dir`
 - prefer `IMAGE_BACKEND` plus provider-specific keys such as `OPENAI_API_KEY` or `GEMINI_API_KEY`
+- when `IMAGE_BACKEND=gemini`, pass `--reference-image <product-image-path>` when product-detail consistency matters
 - do not switch to `image-gen-use-api` at runtime
 
 ## Execution contract
@@ -23,11 +24,12 @@ This variant keeps the blueprint-first, audit-heavy ecommerce page workflow and 
 - when the workflow asks for a `1:3` master, call `detail_flow_use_image_api.py` explicitly in single-image mode
 - when the workflow asks for the first two slices or remaining slices, call `detail_flow_use_image_api.py --manifest <path>` or use a single-image repair run when only one slice needs correction
 - keep the prompt and filename explicit in the command line so the generated asset can be audited later
+- when using Gemini for product-led generation, include `--reference-image` or a manifest `reference_image` field so the product image is sent as multimodal input instead of only being described in text
 
 ## Examples
 
 ```bash
-python skills/detail-flow-use-image-api/detail_flow_use_image_api.py "A polished 1:3 product continuity master" --aspect-ratio "1:3" --filename "product_master_1x3.png" --topic-hint "smart fan"
+python skills/detail-flow-use-image-api/detail_flow_use_image_api.py "A polished 1:3 product continuity master" --aspect-ratio "1:3" --filename "product_master_1x3.png" --topic-hint "smart fan" --reference-image "D:/assets/product.png"
 python skills/detail-flow-use-image-api/detail_flow_use_image_api.py --manifest "project/smart-fan/images/image_prompts.json"
 ```
 

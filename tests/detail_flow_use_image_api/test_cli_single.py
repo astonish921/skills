@@ -62,6 +62,27 @@ class CliSingleTests(unittest.TestCase):
         self.assertEqual(backend.calls[0]["aspect_ratio"], "1:3")
         self.assertEqual(backend.calls[0]["model"], "gpt-image-2")
 
+    def test_single_mode_passes_reference_image_for_gemini(self) -> None:
+        backend = DummyBackend()
+        with tempfile.TemporaryDirectory() as tmp:
+            out_dir = Path(tmp) / "images"
+            out_dir.mkdir()
+            reference_image = Path(tmp) / "product.png"
+            reference_image.write_bytes(b"product-bytes")
+            with mock.patch.dict("os.environ", {"IMAGE_BACKEND": "gemini"}, clear=True):
+                with mock.patch.object(self.cli, "import_backend", return_value=backend):
+                    self.cli.main(
+                        [
+                            "Keep the product structure consistent",
+                            "--output-dir",
+                            str(out_dir),
+                            "--reference-image",
+                            str(reference_image),
+                        ]
+                    )
+
+        self.assertEqual(backend.calls[0]["reference_image"], str(reference_image))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import mimetypes
 import os
 import sys
 import time
@@ -11,6 +12,20 @@ from provider_common import MAX_RETRIES, is_rate_limit_error, require_api_key, r
 DEFAULT_MODEL = "gemini-3.1-flash-image-preview"
 
 
+def _build_contents(sdk_types, prompt: str, reference_image: str | None) -> list:
+    parts = [sdk_types.Part.from_text(text=prompt)]
+    if reference_image:
+        reference_path = Path(reference_image)
+        mime_type = mimetypes.guess_type(reference_path.name)[0] or "image/png"
+        parts.append(
+            sdk_types.Part.from_bytes(
+                data=reference_path.read_bytes(),
+                mime_type=mime_type,
+            )
+        )
+    return parts
+
+
 def generate(
     prompt: str,
     aspect_ratio: str = "1:1",
@@ -18,6 +33,7 @@ def generate(
     output_dir: str | None = None,
     filename: str = "image.png",
     model: str | None = None,
+    reference_image: str | None = None,
     max_retries: int = MAX_RETRIES,
 ) -> str:
     api_key = require_api_key(
@@ -51,7 +67,7 @@ def generate(
             inline_data = None
             for chunk in client.models.generate_content_stream(
                 model=resolved_model,
-                contents=[prompt],
+                contents=_build_contents(sdk_types, prompt, reference_image),
                 config=config,
             ):
                 for part in getattr(chunk, "parts", []) or []:
